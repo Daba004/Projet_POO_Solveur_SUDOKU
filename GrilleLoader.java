@@ -1,6 +1,8 @@
 package sudoku;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.Scanner;
 
 /**
@@ -26,13 +28,38 @@ public class GrilleLoader {
      */
     public static Grille chargerDepuisFichier(String cheminFichier)
             throws FileNotFoundException, FormatGrilleException {
-        // TODO :
-        // 1. Ouvrir le fichier (lever FileNotFoundException si absent)
-        // 2. Lire 9 lignes, chacune avec 9 valeurs
-        // 3. Verifier le nombre de lignes et de colonnes
-        // 4. Verifier que chaque valeur est entre 0 et 9
-        // 5. Retourner un objet Grille
-        return null;
+
+        int[][] cases = new int[9][9];
+        int numeroLigne = 0;
+
+        BufferedReader reader = new BufferedReader(new FileReader(cheminFichier));
+
+        try {
+            String ligne;
+            while ((ligne = reader.readLine()) != null) {
+
+                if (ligne.trim().isEmpty()) continue;
+
+                if (numeroLigne >= 9) {
+                    throw new FormatGrilleException(
+                        "Le fichier contient plus de 9 lignes.");
+                }
+
+                cases[numeroLigne] = analyserLigne(ligne, numeroLigne + 1);
+                numeroLigne++;
+            }
+        } catch (java.io.IOException e) {
+            throw new FormatGrilleException("Erreur de lecture du fichier : " + e.getMessage());
+        } finally {
+            try { reader.close(); } catch (java.io.IOException e) {}
+        }
+
+        if (numeroLigne < 9) {
+            throw new FormatGrilleException(
+                "Le fichier contient seulement " + numeroLigne + " ligne(s) au lieu de 9.");
+        }
+
+        return new Grille(cases);
     }
 
     /**
@@ -43,12 +70,30 @@ public class GrilleLoader {
      * @throws FormatGrilleException si la saisie ne respecte pas le format
      */
     public static Grille chargerDepuisSaisie() throws FormatGrilleException {
-        // TODO :
-        // 1. Afficher un message d'invite a l'utilisateur
-        // 2. Lire 9 lignes depuis System.in
-        // 3. Valider chaque ligne (9 valeurs entre 0 et 9)
-        // 4. Retourner un objet Grille
-        return null;
+
+        int[][] cases = new int[9][9];
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("=== Saisie manuelle de la grille ===");
+        System.out.println("Entrez 9 lignes de 9 chiffres separes par des espaces.");
+        System.out.println("Le chiffre 0 represente une case vide.");
+        System.out.println();
+
+        for (int i = 0; i < 9; i++) {
+            boolean ligneValide = false;
+            while (!ligneValide) {
+                System.out.print("Ligne " + (i + 1) + " : ");
+                String saisie = scanner.nextLine();
+                try {
+                    cases[i] = analyserLigne(saisie, i + 1);
+                    ligneValide = true;
+                } catch (FormatGrilleException e) {
+                    System.out.println("  -> " + e.getMessage() + " Reessayez.");
+                }
+            }
+        }
+
+        return new Grille(cases);
     }
 
     /**
@@ -61,18 +106,39 @@ public class GrilleLoader {
      */
     private static int[] analyserLigne(String ligne, int numeroLigne)
             throws FormatGrilleException {
-        // TODO :
-        // 1. Decouper la ligne par espaces
-        // 2. Verifier qu'il y a exactement 9 valeurs
-        // 3. Convertir en entiers et verifier que chaque valeur est entre 0 et 9
-        return null;
+
+        String[] parties = ligne.trim().split("\\s+");
+
+        if (parties.length != 9) {
+            throw new FormatGrilleException(
+                "Ligne " + numeroLigne + " : attendu 9 valeurs, trouve " + parties.length + ".");
+        }
+
+        int[] resultat = new int[9];
+
+        for (int j = 0; j < 9; j++) {
+            try {
+                int valeur = Integer.parseInt(parties[j]);
+                if (valeur < 0 || valeur > 9) {
+                    throw new FormatGrilleException(
+                        "Ligne " + numeroLigne + ", colonne " + (j + 1)
+                        + " : valeur invalide '" + valeur + "'. Doit etre entre 0 et 9.");
+                }
+                resultat[j] = valeur;
+            } catch (NumberFormatException e) {
+                throw new FormatGrilleException(
+                    "Ligne " + numeroLigne + ", colonne " + (j + 1)
+                    + " : '" + parties[j] + "' n'est pas un chiffre.");
+            }
+        }
+
+        return resultat;
     }
 
     /**
      * Exception personnalisee pour les erreurs de format de la grille.
      */
     public static class FormatGrilleException extends Exception {
-
         /**
          * Constructeur.
          *
