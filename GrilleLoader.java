@@ -5,26 +5,19 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Scanner;
 
-/**
- * Classe GrilleLoader
- *
- * Responsable du chargement de la grille de Sudoku, soit depuis un fichier
- * texte, soit depuis la saisie manuelle de l'utilisateur.
- * Gere toutes les erreurs liees au chargement : fichier absent,
- * mauvais format, valeurs invalides.
- *
- * Responsable : Yvonne
+/*
+ * GrilleLoader.java
+ * Gere le chargement de la grille, que ce soit depuis un fichier
+ * ou depuis la saisie manuelle. Toutes les erreurs de format
+ * sont detectees ici avant que le reste du programme ne demarre.
  */
 public class GrilleLoader {
 
-    /**
-     * Charge une grille depuis un fichier texte.
-     * Le fichier doit contenir 9 lignes de 9 chiffres separes par des espaces.
-     *
-     * @param cheminFichier chemin vers le fichier a lire
-     * @return un objet Grille initialise avec les donnees du fichier
-     * @throws FileNotFoundException  si le fichier est introuvable
-     * @throws FormatGrilleException  si le format du fichier est invalide
+    /*
+     * Lit un fichier texte et construit la grille a partir de son contenu.
+     * Le fichier doit avoir exactement 9 lignes de 9 chiffres separes par des espaces.
+     * Leve FileNotFoundException si le fichier n'existe pas,
+     * et FormatGrilleException si le contenu ne respecte pas le format attendu.
      */
     public static Grille chargerDepuisFichier(String cheminFichier)
             throws FileNotFoundException, FormatGrilleException {
@@ -38,6 +31,7 @@ public class GrilleLoader {
             String ligne;
             while ((ligne = reader.readLine()) != null) {
 
+                // On ignore les lignes vides
                 if (ligne.trim().isEmpty()) continue;
 
                 if (numeroLigne >= 9) {
@@ -62,19 +56,17 @@ public class GrilleLoader {
         return new Grille(cases);
     }
 
-    /**
-     * Charge une grille depuis la saisie manuelle de l'utilisateur.
-     * Invite l'utilisateur a entrer 9 lignes de 9 chiffres separes par des espaces.
-     *
-     * @return un objet Grille initialise avec les donnees saisies
-     * @throws FormatGrilleException si la saisie ne respecte pas le format
+    /*
+     * Demande a l'utilisateur de saisir la grille ligne par ligne.
+     * Si une ligne est mal saisie, on redemande uniquement cette ligne
+     * sans repartir du debut.
      */
     public static Grille chargerDepuisSaisie() throws FormatGrilleException {
 
         int[][] cases = new int[9][9];
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("=== Saisie manuelle de la grille ===");
+        System.out.println("Saisie manuelle de la grille");
         System.out.println("Entrez 9 lignes de 9 chiffres separes par des espaces.");
         System.out.println("Le chiffre 0 represente une case vide.");
         System.out.println();
@@ -96,13 +88,10 @@ public class GrilleLoader {
         return new Grille(cases);
     }
 
-    /**
-     * Analyse une ligne de texte et retourne un tableau de 9 entiers.
-     *
-     * @param ligne       la ligne de texte a analyser
-     * @param numeroLigne le numero de la ligne (pour les messages d'erreur)
-     * @return tableau de 9 entiers (valeurs 0 a 9)
-     * @throws FormatGrilleException si la ligne est mal formee ou contient des valeurs invalides
+    /*
+     * Decoupe une ligne de texte et verifie que les 9 valeurs
+     * sont bien des chiffres entre 0 et 9.
+     * Le parametre numeroLigne sert uniquement a produire des messages d'erreur clairs.
      */
     private static int[] analyserLigne(String ligne, int numeroLigne)
             throws FormatGrilleException {
@@ -135,15 +124,8 @@ public class GrilleLoader {
         return resultat;
     }
 
-    /**
-     * Exception personnalisee pour les erreurs de format de la grille.
-     */
+    // Exception personnalisee pour signaler un probleme de format dans la grille
     public static class FormatGrilleException extends Exception {
-        /**
-         * Constructeur.
-         *
-         * @param message description de l'erreur
-         */
         public FormatGrilleException(String message) {
             super(message);
         }
