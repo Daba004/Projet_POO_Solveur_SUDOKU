@@ -1,134 +1,120 @@
 package sudoku;
 
-/**
- * Classe Grille
- *
- * Represente le modele de donnees d'une grille de Sudoku 9x9.
- * Contient les donnees de la grille et les methodes de validation
- * des regles du Sudoku (ligne, colonne, sous-grille 3x3).
- *
- * Responsable : Daba
+/*
+ * Grille.java
+ * Modele de donnees de la grille de Sudoku 9x9.
+ * C'est la classe centrale du projet : toutes les autres classes
+ * passent par elle pour lire ou modifier les cases.
  */
 public class Grille {
 
-    // Taille standard d'une grille de Sudoku
+    // Taille fixe d'une grille de Sudoku
     public static final int TAILLE = 9;
 
-    // La grille de jeu : 0 represente une case vide
+    // Le tableau qui stocke les valeurs. 0 = case vide.
     private int[][] cases;
 
-    /**
-     * Constructeur par defaut.
-     * Initialise une grille vide (toutes les cases a 0).
-     */
+    // Cree une grille completement vide
     public Grille() {
-        // TODO : initialiser le tableau cases de taille TAILLE x TAILLE
+        this.cases = new int[TAILLE][TAILLE];
     }
 
-    /**
-     * Constructeur avec parametre.
-     * Initialise la grille a partir d'un tableau existant.
-     *
-     * @param cases tableau 9x9 representant la grille
+    /*
+     * Cree une grille a partir d'un tableau existant.
+     * On fait une copie case par case pour ne pas partager
+     * le meme tableau en memoire avec l'appelant.
      */
     public Grille(int[][] cases) {
-        // TODO : copier le tableau passe en parametre dans this.cases
+        this.cases = new int[TAILLE][TAILLE];
+        for (int i = 0; i < TAILLE; i++) {
+            for (int j = 0; j < TAILLE; j++) {
+                this.cases[i][j] = cases[i][j];
+            }
+        }
     }
 
-    /**
-     * Retourne la valeur d'une case.
-     *
-     * @param ligne   indice de la ligne (0 a 8)
-     * @param colonne indice de la colonne (0 a 8)
-     * @return la valeur de la case (0 si vide)
-     */
     public int getCase(int ligne, int colonne) {
-        // TODO
-        return 0;
+        return cases[ligne][colonne];
     }
 
-    /**
-     * Modifie la valeur d'une case.
-     *
-     * @param ligne   indice de la ligne (0 a 8)
-     * @param colonne indice de la colonne (0 a 8)
-     * @param valeur  valeur a placer (1 a 9, ou 0 pour vider)
-     */
     public void setCase(int ligne, int colonne, int valeur) {
-        // TODO
+        cases[ligne][colonne] = valeur;
     }
 
-    /**
-     * Verifie si une valeur peut etre placee a une position donnee
-     * sans violer les regles du Sudoku.
-     *
-     * @param ligne   indice de la ligne
-     * @param colonne indice de la colonne
-     * @param valeur  valeur a tester (1 a 9)
-     * @return true si le placement est valide, false sinon
+    /*
+     * Verifie si on peut placer "valeur" en (ligne, colonne)
+     * sans violer les trois regles du Sudoku.
+     * Retourne false des qu'une des trois conditions echoue.
      */
     public boolean estValide(int ligne, int colonne, int valeur) {
-        // TODO : verifier ligne, colonne et sous-grille 3x3
-        return false;
+        return !valeurDansLigne(ligne, valeur)
+            && !valeurDansColonne(colonne, valeur)
+            && !valeurDansSousGrille(ligne, colonne, valeur);
     }
 
-    /**
-     * Verifie si la valeur est deja presente dans la ligne donnee.
-     *
-     * @param ligne  indice de la ligne
-     * @param valeur valeur a chercher
-     * @return true si la valeur est en double, false sinon
-     */
+    // Parcourt la ligne et cherche si la valeur y est deja presente
     private boolean valeurDansLigne(int ligne, int valeur) {
-        // TODO
+        for (int j = 0; j < TAILLE; j++) {
+            if (cases[ligne][j] == valeur) {
+                return true;
+            }
+        }
         return false;
     }
 
-    /**
-     * Verifie si la valeur est deja presente dans la colonne donnee.
-     *
-     * @param colonne indice de la colonne
-     * @param valeur  valeur a chercher
-     * @return true si la valeur est en double, false sinon
-     */
+    // Pareil mais sur la colonne
     private boolean valeurDansColonne(int colonne, int valeur) {
-        // TODO
+        for (int i = 0; i < TAILLE; i++) {
+            if (cases[i][colonne] == valeur) {
+                return true;
+            }
+        }
         return false;
     }
 
-    /**
-     * Verifie si la valeur est deja presente dans la sous-grille 3x3
-     * contenant la case (ligne, colonne).
-     *
-     * @param ligne   indice de la ligne
-     * @param colonne indice de la colonne
-     * @param valeur  valeur a chercher
-     * @return true si la valeur est en double, false sinon
+    /*
+     * Cherche si la valeur existe deja dans le bloc 3x3
+     * qui contient la case (ligne, colonne).
+     * On calcule le coin superieur gauche du bloc avec une division entiere.
      */
     private boolean valeurDansSousGrille(int ligne, int colonne, int valeur) {
-        // TODO
+        int debutLigne   = (ligne / 3) * 3;
+        int debutColonne = (colonne / 3) * 3;
+
+        for (int i = debutLigne; i < debutLigne + 3; i++) {
+            for (int j = debutColonne; j < debutColonne + 3; j++) {
+                if (cases[i][j] == valeur) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
-    /**
-     * Verifie si la grille initiale est coherente, c'est-a-dire qu'aucun
-     * doublon n'existe sur les cases deja remplies.
-     * A appeler avant de lancer la resolution.
-     *
-     * @return true si la grille initiale est valide, false sinon
+    /*
+     * Verifie que la grille de depart ne contient pas deja des doublons.
+     * A appeler avant de lancer le solveur.
+     * Astuce : on vide temporairement la case testee pour qu'elle
+     * ne se detecte pas elle-meme comme doublon.
      */
     public boolean grilleInitialeValide() {
-        // TODO
+        for (int i = 0; i < TAILLE; i++) {
+            for (int j = 0; j < TAILLE; j++) {
+                int valeur = cases[i][j];
+                if (valeur != 0) {
+                    cases[i][j] = 0;
+                    if (!estValide(i, j, valeur)) {
+                        cases[i][j] = valeur;
+                        return false;
+                    }
+                    cases[i][j] = valeur;
+                }
+            }
+        }
         return true;
     }
 
-    /**
-     * Retourne le tableau brut de la grille.
-     *
-     * @return tableau 9x9
-     */
     public int[][] getCases() {
-        // TODO
         return cases;
     }
 }
