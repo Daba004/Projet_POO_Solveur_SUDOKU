@@ -7,12 +7,12 @@ Licence 3 GLSI - Ecole Superieure Polytechnique de Dakar
 
 ## Groupe
 
-| Membre   | Classe(s)                | Role                                            |
-|----------|--------------------------|-------------------------------------------------|
-| Daba     | Grille.java              | Modele de donnees, validation des regles Sudoku |
-| Yvonne   | GrilleLoader.java        | Chargement fichier/saisie, gestion des erreurs  |
-| Amina    | Afficheur.java           | Affichage console avec box-drawing characters   |
-| Saynabou | Solveur.java + Main.java | Algorithme backtracking, point d'entree         |
+| Membre            | Classe(s)                | Role                                            |
+|-------------------|--------------------------|-------------------------------------------------|
+| Daba SENE         | Grille.java              | Modele de donnees, validation des regles Sudoku |
+| Arame Yvonne DIOP | GrilleLoader.java        | Chargement fichier/saisie, gestion des erreurs  |
+| Aminata NDIAYE    | Afficheur.java           | Affichage console avec box-drawing characters   |
+| Saynabou GUEYE    | Solveur.java + Main.java | Algorithme backtracking, point d'entree         |
 
 ---
 
@@ -82,10 +82,4 @@ Le chiffre 0 represente une case vide.
 | Grille initiale incoherente       | Erreur : la grille initiale contient des doublons |
 | Grille sans solution              | Erreur : cette grille n'a pas de solution         |
 
----
 
-## Date de rendu
-
-12 avril 2026 a 23h59:59 - date non extensible
-Envoi a : envoitp@gmail.com
-Objet : Projet_Sudoku_Gx_L3GLSIz
