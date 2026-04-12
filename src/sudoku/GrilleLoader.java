@@ -10,12 +10,20 @@ import java.util.Scanner;
  * Gere le chargement de la grille, que ce soit depuis un fichier
  * ou depuis la saisie manuelle. Toutes les erreurs de format
  * sont detectees ici avant que le reste du programme ne demarre.
+ *
+ * Chaque erreur produit un message qui indique precisement
+ * ou le probleme se trouve (numero de ligne, numero de colonne,
+ * valeur incorrecte) pour aider l'utilisateur a corriger son fichier.
  */
 public class GrilleLoader {
 
     /*
      * Lit un fichier texte et construit la grille a partir de son contenu.
      * Le fichier doit avoir exactement 9 lignes de 9 chiffres separes par des espaces.
+     *
+     * Les lignes vides sont ignorees pour eviter les faux positifs
+     * dus aux sauts de ligne en fin de fichier.
+     *
      * Leve FileNotFoundException si le fichier n'existe pas,
      * et FormatGrilleException si le contenu ne respecte pas le format attendu.
      */
@@ -36,21 +44,24 @@ public class GrilleLoader {
 
                 if (numeroLigne >= 9) {
                     throw new FormatGrilleException(
-                        "Le fichier contient plus de 9 lignes.");
+                        "Le fichier contient plus de 9 lignes de donnees. " +
+                        "Verifiez qu'il n'y a pas de lignes supplementaires apres la 9eme.");
                 }
 
                 cases[numeroLigne] = analyserLigne(ligne, numeroLigne + 1);
                 numeroLigne++;
             }
         } catch (java.io.IOException e) {
-            throw new FormatGrilleException("Erreur de lecture du fichier : " + e.getMessage());
+            throw new FormatGrilleException(
+                "Impossible de lire le fichier : " + e.getMessage());
         } finally {
             try { reader.close(); } catch (java.io.IOException e) {}
         }
 
         if (numeroLigne < 9) {
             throw new FormatGrilleException(
-                "Le fichier contient seulement " + numeroLigne + " ligne(s) au lieu de 9.");
+                "Le fichier ne contient que " + numeroLigne + " ligne(s) au lieu de 9. " +
+                "La grille est incomplete.");
         }
 
         return new Grille(cases);
@@ -58,8 +69,9 @@ public class GrilleLoader {
 
     /*
      * Demande a l'utilisateur de saisir la grille ligne par ligne.
-     * Si une ligne est mal saisie, on redemande uniquement cette ligne
-     * sans repartir du debut.
+     * Si une ligne est mal saisie, on affiche l'erreur et on redemande
+     * uniquement cette ligne sans repartir du debut.
+     * Ca evite a l'utilisateur de tout retaper pour une seule erreur.
      */
     public static Grille chargerDepuisSaisie() throws FormatGrilleException {
 
@@ -80,7 +92,7 @@ public class GrilleLoader {
                     cases[i] = analyserLigne(saisie, i + 1);
                     ligneValide = true;
                 } catch (FormatGrilleException e) {
-                    System.out.println("  -> " + e.getMessage() + " Reessayez.");
+                    System.out.println("  -> Erreur : " + e.getMessage() + " Reessayez.");
                 }
             }
         }
@@ -91,7 +103,12 @@ public class GrilleLoader {
     /*
      * Decoupe une ligne de texte et verifie que les 9 valeurs
      * sont bien des chiffres entre 0 et 9.
-     * Le parametre numeroLigne sert uniquement a produire des messages d'erreur clairs.
+     *
+     * On utilise split("\\s+") pour accepter plusieurs espaces
+     * entre les chiffres, ce qui rend le format un peu plus souple.
+     *
+     * Le parametre numeroLigne sert uniquement a produire des
+     * messages d'erreur qui indiquent exactement ou est le probleme.
      */
     private static int[] analyserLigne(String ligne, int numeroLigne)
             throws FormatGrilleException {
@@ -100,7 +117,8 @@ public class GrilleLoader {
 
         if (parties.length != 9) {
             throw new FormatGrilleException(
-                "Ligne " + numeroLigne + " : attendu 9 valeurs, trouve " + parties.length + ".");
+                "Ligne " + numeroLigne + " : " + parties.length + " valeur(s) trouvee(s) " +
+                "au lieu de 9. Chaque ligne doit contenir exactement 9 chiffres.");
         }
 
         int[] resultat = new int[9];
@@ -110,14 +128,15 @@ public class GrilleLoader {
                 int valeur = Integer.parseInt(parties[j]);
                 if (valeur < 0 || valeur > 9) {
                     throw new FormatGrilleException(
-                        "Ligne " + numeroLigne + ", colonne " + (j + 1)
-                        + " : valeur invalide '" + valeur + "'. Doit etre entre 0 et 9.");
+                        "Ligne " + numeroLigne + ", colonne " + (j + 1) +
+                        " : la valeur " + valeur + " est invalide." +
+                        " Seuls les chiffres de 0 a 9 sont autorises (0 = case vide).");
                 }
                 resultat[j] = valeur;
             } catch (NumberFormatException e) {
                 throw new FormatGrilleException(
-                    "Ligne " + numeroLigne + ", colonne " + (j + 1)
-                    + " : '" + parties[j] + "' n'est pas un chiffre.");
+                    "Ligne " + numeroLigne + ", colonne " + (j + 1) +
+                    " : '" + parties[j] + "' n'est pas un chiffre valide.");
             }
         }
 
